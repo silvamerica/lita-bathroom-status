@@ -42,7 +42,7 @@ module Lita
 
       def states
         states = redis.hgetall(:doors) # {"1" => "open", "2" => "closed"}
-        string = states.map{|k, v| ['Floor', k, ': ', (v == "open" ? ':green_circle:' : ':red_circle:')]}.join(' ')
+        string = states.map{|k, v| [(v == "open" ? ':green_circle:' : ':red_circle:'), 'F' + k]}.join(' ')
       end
     end
 
