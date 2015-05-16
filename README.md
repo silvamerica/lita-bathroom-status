@@ -2,6 +2,8 @@
 
 Keeps track of the status of bathrooms.
 
+Beware: This is custom-tailored to the Slack adapter and will break in weird ways.
+
 ## Installation
 
 Add lita-bathroom-status to your Lita instance's Gemfile:
