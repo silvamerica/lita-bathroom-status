@@ -15,7 +15,7 @@ module Lita
         message = @api.send :call_api, 'chat.postMessage', outgoing_params
 
         Lita.logger.info(message.inspect)
-        redis.hmset(:fixed_message, :channel, room, :ts, message["ts"])
+        redis.hmset(:pinned_message, :channel, room, :ts, message["ts"])
       end
 
       def update_state(request, response)
@@ -26,10 +26,10 @@ module Lita
 
         @adapter ||= robot.send :adapter
         @api ||= Lita::Adapters::Slack::API.new(@adapter.config)
-        fixed_message = redis.hgetall(:fixed_message)
+        pinned_message = redis.hgetall(:pinned_message)
 
-        if (fixed_message)
-          outgoing_params = fixed_message.merge({
+        if (pinned_message)
+          outgoing_params = pinned_message.merge({
             :text => states
           })
           @message = @api.send :call_api, 'chat.update', outgoing_params
