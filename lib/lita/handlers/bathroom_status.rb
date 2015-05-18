@@ -1,7 +1,7 @@
 module Lita
   module Handlers
     class BathroomStatus < Handler
-      http.get('/bathroom/:id/:state', :update_state)
+      http.post('/bathroom/:id/:state', :update_state)
       route('show bathrooms', :post_state, command: true, help: {
         "bathrooms" => "Shows the state of bathrooms."
         })
@@ -37,7 +37,7 @@ module Lita
       end
 
       def post_state(response)
-        response.reply(string)
+        response.reply(states)
       end
 
       def states
