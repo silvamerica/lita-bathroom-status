@@ -29,7 +29,7 @@ module Lita
         @api ||= Lita::Adapters::Slack::API.new(@adapter.config)
         pinned_message = redis.hgetall(:pinned_message)
 
-        if (pinned_message)
+        if (!pinned_message.empty?)
           outgoing_params = pinned_message.merge({
             :text => states
           })
