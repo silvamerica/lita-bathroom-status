@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name          = "lita-bathroom-status"
-  spec.version       = "0.1.0"
+  spec.version       = "0.2.0"
   spec.authors       = ["Nicholas Silva"]
   spec.email         = ["nick@silvamerica.com"]
   spec.description   = "Keeps track of the status of bathrooms."

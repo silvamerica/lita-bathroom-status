@@ -2,16 +2,18 @@ module Lita
   module Handlers
     class BathroomStatus < Handler
       http.post('/bathroom/:id/:state', :update_state)
-      route('show bathrooms', :post_state, command: true, help: {
+      http.get('/bathrooms', :bathroom_state_endpoint)
+
+      route('show bathrooms', :reply_with_bathroom_state, command: true, help: {
         "bathrooms" => "Shows the state of bathrooms."
         })
-      route('pin bathrooms here', :post_fixed_state, command: true)
+      route('pin bathrooms here', :reply_and_save_message_location, command: true)
 
-      def post_fixed_state(response)
+      def reply_and_save_message_location(response)
         room = response.message.source.room
         @adapter ||= robot.send :adapter
         @api ||= Lita::Adapters::Slack::API.new(@adapter.config)
-        outgoing_params = {:channel => room, :text => states, :as_user => true}
+        outgoing_params = {:channel => room, :text => "Bathroom Status:\n" + states, :as_user => true}
         message = @api.send :call_api, 'chat.postMessage', outgoing_params
 
         Lita.logger.info(message.inspect)
@@ -36,13 +38,21 @@ module Lita
         end
       end
 
-      def post_state(response)
-        response.reply(states)
+      def bathroom_state_endpoint(request, response)
+        response.write("Bathroom Status as of #{now}:\n" + states)
+      end
+
+      def reply_with_bathroom_state(response)
+        response.reply("Bathroom Status as of #{now}:\n" + states)
       end
 
       def states
         states = redis.hgetall(:doors) # {"1" => "open", "2" => "closed"}
-        string = "Bathroom Status:\n" + states.map{|k, v| [(v == "open" ? ':green_circle:' : ':red_circle:'), k + 'F']}.join(' ')
+        string = states.map{|k, v| [(v == "open" ? ':green_circle:' : ':red_circle:'), k + 'F']}.join(' ')
+      end
+
+      def now
+        Time.now.strftime('%r')
       end
     end
 
