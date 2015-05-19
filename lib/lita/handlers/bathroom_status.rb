@@ -16,7 +16,6 @@ module Lita
         outgoing_params = {:channel => room, :text => "Bathroom Status:\n" + states, :as_user => true}
         message = @api.send :call_api, 'chat.postMessage', outgoing_params
 
-        Lita.logger.info(message.inspect)
         redis.hmset(:pinned_message, :channel, room, :ts, message["ts"])
       end
 
