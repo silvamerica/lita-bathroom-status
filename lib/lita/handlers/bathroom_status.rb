@@ -1,4 +1,3 @@
-require 'pry'
 module Lita
   module Handlers
     class BathroomStatus < Handler
@@ -11,7 +10,7 @@ module Lita
       http.post('/bathroom/:id/:state', :handle_post_webhook)
       http.get('/bathrooms', :bathroom_state_endpoint)
 
-      route('show bathrooms', :reply_with_bathroom_state, command: true, help: {
+      route(/show bathrooms/i, :reply_with_bathroom_state, command: true, help: {
         "bathrooms" => "Shows the state of bathrooms."
         })
       route('pin bathrooms here', :reply_and_save_message_location, command: true)
