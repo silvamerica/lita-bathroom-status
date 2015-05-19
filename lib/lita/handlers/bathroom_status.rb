@@ -1,7 +1,14 @@
+require 'pry'
 module Lita
   module Handlers
     class BathroomStatus < Handler
-      http.post('/bathroom/:id/:state', :update_state)
+      EMOJI_STATES = {
+        'open'    => ':green_circle:',
+        'closed'  => ':red_circle:',
+        'warning' => ':warning:'
+      }
+
+      http.post('/bathroom/:id/:state', :handle_post_webhook)
       http.get('/bathrooms', :bathroom_state_endpoint)
 
       route('show bathrooms', :reply_with_bathroom_state, command: true, help: {
@@ -19,11 +26,22 @@ module Lita
         redis.hmset(:pinned_message, :channel, room, :ts, message["ts"])
       end
 
-      def update_state(request, response)
+      def handle_post_webhook(request, response)
         state = request.env["router.params"][:state]
         id = request.env["router.params"][:id]
 
-        redis.hmset(:doors, id, state)
+        if (state == 'open')
+          closed_time = redis.hget(:door_times, id) || Time.now.to_s
+          if (Time.now - Time.parse(closed_time)) > 600
+            update_state(id, 'warning')
+            after(300) { update_state(id, state) }
+          else
+            update_state(id, state)
+          end
+        else
+          update_state(id, state)
+        end
+
 
         @adapter ||= robot.send :adapter
         @api ||= Lita::Adapters::Slack::API.new(@adapter.config)
@@ -45,9 +63,14 @@ module Lita
         response.reply("Bathroom Status as of #{now}:\n" + states)
       end
 
+      def update_state(id, state)
+        redis.hmset(:doors, id, state)
+        redis.hmset(:door_times, id, Time.now)
+      end
+
       def states
         states = redis.hgetall(:doors) # {"1" => "open", "2" => "closed"}
-        string = states.map{|k, v| [(v == "open" ? ':green_circle:' : ':red_circle:'), k + 'F']}.join(' ')
+        states.map{|k, v| [EMOJI_STATES[v], k + 'F']}.join(' ')
       end
 
       def now
