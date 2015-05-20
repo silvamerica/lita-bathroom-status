@@ -48,7 +48,7 @@ module Lita
 
         if (!pinned_message.empty?)
           outgoing_params = pinned_message.merge({
-            :text => states
+            :text => "Bathroom Status:\n" + states
           })
           @message = @api.send :call_api, 'chat.update', outgoing_params
         end
