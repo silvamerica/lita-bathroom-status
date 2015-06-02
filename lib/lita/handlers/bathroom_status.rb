@@ -9,6 +9,7 @@ module Lita
 
       http.post('/bathroom/:id/:state', :handle_post_webhook)
       http.get('/bathrooms', :bathroom_state_endpoint)
+      http.get('/bathrooms.json', :bathroom_state_endpoint_json)
 
       route(/show bathrooms/i, :reply_with_bathroom_state, command: true, help: {
         "bathrooms" => "Shows the state of bathrooms."
@@ -56,6 +57,13 @@ module Lita
 
       def bathroom_state_endpoint(request, response)
         response.write("Bathroom Status as of #{now}:\n" + states)
+      end
+
+      def bathroom_state_endpoint_json(request, response)
+        response.headers['Content-Type'] = 'application/json'
+        states = redis.hgetall(:doors)
+        states[:ts] = now
+        response.write(states.to_json)
       end
 
       def reply_with_bathroom_state(response)
